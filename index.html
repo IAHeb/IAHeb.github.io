@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notas del Estudiante</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-r from-blue-100 to-purple-100 flex justify-center items-center min-h-screen p-4">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md transition-transform hover:scale-105">
+        <h1 class="text-2xl font-semibold text-indigo-600 text-center mb-6">Sistema de Notas</h1>
+        <div class="mb-4">
+            <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Correo Electrónico del Estudiante:</label>
+            <input type="email" id="email" placeholder="ejemplo@estudiante.com" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+        <button id="consultarBtn" class="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition duration-300 ease-in-out">
+            Consultar Notas
+        </button>
+        <div id="resultado" class="mt-6 p-4 bg-gray-50 rounded-md border border-gray-200 hidden">
+            <h2 class="text-xl font-semibold text-blue-700 mb-3">Resultados:</h2>
+            <div id="nombreEstudiante" class="text-gray-800 mb-2"></div>
+            <div id="asistenciaParticipacion" class="text-gray-800 mb-2"></div>
+            <div id="cuestionario" class="text-gray-800 mb-2"></div>
+            <div id="foro1" class="text-gray-800 mb-2"></div>
+            <div id="foro2" class="text-gray-800 mb-2"></div>
+            <div id="practica1" class="text-gray-800 mb-2"></div>
+            <div id="practica2" class="text-gray-800 mb-2"></div>
+            <div id="trabajoFinal" class="text-gray-800 mb-2"></div>
+            <div id="notaFinal" class="text-gray-800 mb-2"></div>
+            <div id="mensajeError" class="text-red-500 font-semibold"></div>
+        </div>
+    </div>
+    <script>
+        const consultarBtn = document.getElementById('consultarBtn');
+        const emailInput = document.getElementById('email');
+        const resultadoDiv = document.getElementById('resultado');
+        const nombreEstudianteDiv = document.getElementById('nombreEstudiante');
+        const asistenciaParticipacionDiv = document.getElementById('asistenciaParticipacion');
+        const cuestionarioDiv = document.getElementById('cuestionario');
+        const foro1Div = document.getElementById('foro1');
+        const foro2Div = document.getElementById('foro2');
+        const practica1Div = document.getElementById('practica1');
+        const practica2Div = document.getElementById('practica2');
+        const trabajoFinalDiv = document.getElementById('trabajoFinal');
+        const notaFinalDiv = document.getElementById('notaFinal');
+        const mensajeErrorDiv = document.getElementById('mensajeError');
+
+        consultarBtn.addEventListener('click', function() {
+            const email = emailInput.value;
+            const excelFilePath = 'URL_DEL_ARCHIVO_EXCEL_AQUI/RN.xlsx'; // Reemplazar con la URL real del archivo
+
+            if (!email) {
+                mensajeErrorDiv.textContent = "Por favor, ingrese el correo electrónico del estudiante.";
+                resultadoDiv.classList.add('hidden');
+                return;
+            } else {
+                mensajeErrorDiv.textContent = ""; // Clear any previous error message
+            }
+
+            // Función para obtener el archivo Excel desde una URL
+            const getExcelFile = (url) => {
+                return new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', url, true);
+                    xhr.responseType = 'arraybuffer';
+
+                    xhr.onload = () => {
+                        if (xhr.status === 200) {
+                            resolve(xhr.response);
+                        } else {
+                            reject(new Error(`Error al descargar el archivo: ${xhr.statusText}`));
+                        }
+                    };
+
+                    xhr.onerror = () => {
+                        reject(new Error("Error de red al intentar descargar el archivo."));
+                    };
+
+                    xhr.send();
+                });
+            };
+
+            // Llamar a la función para obtener el archivo y procesarlo
+            getExcelFile(excelFilePath)
+                .then(data => {
+                    try {
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[sheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                        let estudianteEncontrado = false;
+                        let headerRow = [];
+
+                        jsonData.forEach((row, index) => {
+                            if (index === 0) {
+                                headerRow = row;
+                            } else {
+                                const correoEstudiante = row[0]; // Assuming email is the first column
+                                if (correoEstudiante === email) {
+                                    estudianteEncontrado = true;
+                                    const nombreCompleto = row[1];
+                                    const asistenciaParticipacion = row[2];
+                                    const cuestionario = row[3];
+                                    const foro1 = row[4];
+                                    const foro2 = row[5];
+                                    const practica1 = row[6];
+                                    const practica2 = row[7];
+                                    const trabajoFinal = row[8];
+                                    const notaFinal = row[9];
+
+                                    nombreEstudianteDiv.textContent = `Nombre Completo: ${nombreCompleto}`;
+                                    asistenciaParticipacionDiv.textContent = `Asistencia y Participación: ${asistenciaParticipacion}`;
+                                    cuestionarioDiv.textContent = `Cuestionario: ${cuestionario}`;
+                                    foro1Div.textContent = `Foro 1: ${foro1}`;
+                                    foro2Div.textContent = `Foro 2: ${foro2}`;
+                                    practica1Div.textContent = `Práctica 1: ${practica1}`;
+                                    practica2Div.textContent = `Práctica 2: ${practica2}`;
+                                    trabajoFinalDiv.textContent = `Trabajo Final: ${trabajoFinal}`;
+                                    notaFinalDiv.textContent = `Nota Final: ${notaFinal}`;
+
+                                    resultadoDiv.classList.remove('hidden');
+                                    return; // Exit the loop after finding the student
+                                }
+                            }
+                        });
+
+                        if (!estudianteEncontrado) {
+                            mensajeErrorDiv.textContent = "No se encontró al estudiante con el correo electrónico proporcionado.";
+                            resultadoDiv.classList.add('hidden');
+                        }
+                    } catch (error) {
+                        mensajeErrorDiv.textContent = "Error al procesar el archivo de Excel. Asegúrese de que el formato sea correcto.";
+                        resultadoDiv.classList.add('hidden');
+                        console.error("Error:", error); // Log the error for debugging
+                    }
+                })
+                .catch(error => {
+                    mensajeErrorDiv.textContent = error.message;
+                    resultadoDiv.classList.add('hidden');
+                    console.error("Error:", error);
+                });
+        });
+    </script>
+</body>
+</html>
