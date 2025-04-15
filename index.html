@@ -30,7 +30,7 @@
     <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md transition-transform hover:scale-105">
         <h1 class="text-2xl font-semibold text-indigo-600 text-center mb-6">Sistema de Notas</h1>
         <div class="mb-4">
-            <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Ingresa tu Correo Electrónico de UNIVALLE:</label>
+            <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Ingresa tu A Correo Electrónico de UNIVALLE:</label>
             <input type="email" id="email" placeholder="ejemplo@estudiante.com" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
         <button id="consultarBtn" class="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition duration-300 ease-in-out">
@@ -67,7 +67,7 @@
 
         consultarBtn.addEventListener('click', function() {
             const email = emailInput.value;
-            const excelFilePath = 'https://github.com/IAHeb/IAHeb.github.io/raw/refs/heads/main/RN.xlsx'; // Reemplazar con la URL real del archivo
+            const excelFilePath = 'https://raw.githubusercontent.com/IAHeb/IAHeb.github.io/raw/refs/heads/main/RN.xlsx'; // Reemplazar con la URL real del archivo
 
             if (!email) {
                 mensajeErrorDiv.textContent = "Por favor, ingrese el correo electrónico del estudiante.";
